@@ -1,9 +1,9 @@
-# Will Schnicke
-# CSE 5462
-# Ogle 9:35
 # Lab 1
+#### Will Schnicke
+#### CSE 5462
+#### Ogle 9:35
 
-### Description
+## Description
 count.c will count the number of occurrences of a query string within a given
 input file. The results and size of the input will be printed to the terminal
 as well to a specified output file.
