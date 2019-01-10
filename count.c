@@ -12,6 +12,8 @@
 // output file. The size of the input file and the number of occurrences of the
 // search string will be printed to the output file
 
+void count(FILE *infile, FILE *outfile, char *query);
+
 int count_hits(char *buffer, int buf_len, char *query, int q_len);
 
 int main(int argc, char **argv) {
@@ -35,8 +37,20 @@ int main(int argc, char **argv) {
         printf("Exiting...\n");
         exit(1); 
     }
+
+    count(infile, outfile, argv[2]);
+
+    fclose(infile);
+    fclose(outfile);
+}
+
+// this function will carry out the actualy operation of count.c
+// infile - a FILE ptr opened for reading; the input text
+// outfile - a FILE ptr opened for writing; the output text
+// query - the query string, should be null terminated
+void count(FILE *infile, FILE *outfile, char *query) {
     // find length of search string
-    int q_len = strlen(argv[2]);
+    int q_len = strlen(query);
     // tracks length of file
     int file_len = 0;
     // tracks number of matches
@@ -49,7 +63,7 @@ int main(int argc, char **argv) {
         // read in next chunk to buffer
         int chunk_len = fread(buffer, sizeof(char), BUF_SIZE, infile);
         file_len += chunk_len;
-        hits += count_hits(buffer, chunk_len, argv[2], q_len);
+        hits += count_hits(buffer, chunk_len, query, q_len);
 
         // rewind file by q_len - 1 if not at end
         // this allows to capture queries across the chunks
@@ -58,17 +72,16 @@ int main(int argc, char **argv) {
             // subtract off difference to avoid double counting
             file_len += 1 - q_len;
         }
+        // because memory leaks
+        free(buffer);
     }
-    free(buffer);
+    
     // print to terminal
     printf("Size of file is %d\n", file_len);
     printf("Number of matches = %d\n\n", hits);
     // print to file
     fprintf(outfile, "Size of file is %d\n", file_len);
     fprintf(outfile, "Number of matches = %d\n\n", hits);
-
-    fclose(infile);
-    fclose(outfile);
 }
 
 // returns the number of hits of query within buffer
@@ -77,8 +90,10 @@ int count_hits(char *buffer, int buf_len, char *query, int q_len) {
     int count = 0;
     while(i <= buf_len - q_len) {
         char *substr = malloc(q_len * sizeof(char));
-        strncpy(substr, buffer + i, q_len);
-        if(!strcmp(substr, query))
+        // TODO: avoid strncmp and strncpy?
+        memcpy(substr, buffer + i, q_len);
+        // increment count if they match
+        if(!memcmp(substr, query, q_len))
             count++;
 
         i++;
