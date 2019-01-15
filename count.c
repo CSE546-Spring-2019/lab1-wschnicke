@@ -14,7 +14,7 @@
 
 void count(FILE *infile, FILE *outfile, char *query);
 
-int count_hits(char *buffer, int buf_len, char *query, int q_len);
+long long count_hits(char *buffer, int buf_len, char *query, int q_len);
 
 int main(int argc, char **argv) {
     // escape clauses to check for arguments
@@ -52,13 +52,14 @@ void count(FILE *infile, FILE *outfile, char *query) {
     // find length of search string
     int q_len = strlen(query);
     // tracks length of file
-    int file_len = 0;
+    long long file_len = 0;
     // tracks number of matches
-    int hits = 0;
+    long long hits = 0;
     // buffer stores current BUF_SIZE characters
     char *buffer;
 
     while(!feof(infile)) {
+        // printf("cur. count: %lld\n", hits);
         buffer = malloc(BUF_SIZE);
         // read in next chunk to buffer
         int chunk_len = fread(buffer, sizeof(char), BUF_SIZE, infile);
@@ -77,20 +78,21 @@ void count(FILE *infile, FILE *outfile, char *query) {
     }
     
     // print to terminal
-    printf("Size of file is %d\n", file_len);
-    printf("Number of matches = %d\n\n", hits);
+    printf("Size of file is %lld\n", file_len);
+    printf("Number of matches = %lld\n\n", hits);
     // print to file
-    fprintf(outfile, "Size of file is %d\n", file_len);
-    fprintf(outfile, "Number of matches = %d\n\n", hits);
+    fprintf(outfile, "Size of file is %lld\n", file_len);
+    fprintf(outfile, "Number of matches = %lld\n\n", hits);
 }
 
 // returns the number of hits of query within buffer
-int count_hits(char *buffer, int buf_len, char *query, int q_len) {
-    int i = 0;
-    int count = 0;
+long long count_hits(char *buffer, int buf_len, char *query, int q_len) {
+    long long i = 0;
+    long long count = 0;
+    // this comparsion would probably be better if i avoided this copy
     while(i <= buf_len - q_len) {
+        // get next substring
         char *substr = malloc(q_len * sizeof(char));
-        // TODO: avoid strncmp and strncpy?
         memcpy(substr, buffer + i, q_len);
         // increment count if they match
         if(!memcmp(substr, query, q_len))
